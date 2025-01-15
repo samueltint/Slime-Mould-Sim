@@ -1,17 +1,25 @@
 class Agent {
   PVector pos;
-  float dir;
-  float speed = 1;
+  PVector dir;
+  float speed = 2;
   
-  Agent(PVector _pos, float _dir) {
+  Agent(PVector _pos, float _angle) {
     pos = _pos;
-    dir = _dir;
+    dir = PVector.fromAngle(_angle);
   }
   
   void update() {
-    PVector delta = PVector.fromAngle(dir).mult(speed);
+    PVector delta = dir.copy().mult(speed);
+    //check walls
+    if (pos.x + delta.x > width || pos.x + delta.x < 0) {
+      delta.x *= -1;
+      dir.x *= -1;
+    }
+    if (pos.y + delta.y > width || pos.y + delta.y < 0) {
+      delta.y *= -1;
+      dir.y *= -1;
+    }
     pos.add(delta);
-    println(pos);
   }
   
   void display() {
