@@ -1,6 +1,7 @@
 float speed = 1;
 float sensorAngle = PI / 4;
 float rotationAngle = PI / 4;
+float rotationRandomness = PI / 16;
 float sensorDistance = 2;
 
 class Agent {
@@ -37,14 +38,14 @@ class Agent {
       dir.rotate(rotationAngle);
     }
     
-    PVector delta = dir.copy().mult(speed);
+    PVector delta = dir.copy().rotate(random(-rotationRandomness / 2, rotationRandomness / 2)).mult(speed);
     
     //check walls
-    if (pos.x + delta.x > width || pos.x + delta.x < 0) {
+    if (pos.x + delta.x > width - padding || pos.x + delta.x < padding) {
       delta.x *= -1;
       dir.x *= -1;
     }
-    if (pos.y + delta.y > width || pos.y + delta.y < 0) {
+    if (pos.y + delta.y > height - padding || pos.y + delta.y < padding) {
       delta.y *= -1;
       dir.y *= -1;
     }
@@ -53,6 +54,7 @@ class Agent {
   }
   
   void display() {
+    strokeWeight(1);
     point(pos.x, pos.y);
   }
 }
