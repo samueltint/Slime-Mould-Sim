@@ -1,11 +1,11 @@
 ArrayList<Agent> agents = new ArrayList<Agent>();
-float populationPercentage = 0.1;
-int agentSpawnRadius = 200;
+float populationPercentage = 0.2;
+int agentSpawnRadius = 75;
 
-ArrayList<Source> sources = new ArrayList<Source>();
-int sourceCount = 0;
-int sourceSize = 15;
-int sourceSpawnRadius = 100;
+ArrayList<Resource> resources = new ArrayList<Resource>();
+int resourceCount = 6;
+int resourceSize = 10;
+int resourceSpawnRadius = 75;
 
 int padding = 10;
 float decay = 0.95;
@@ -14,15 +14,19 @@ int blurSize = 1;
 
 void setup() {
   //fullScreen();
-  size(210,210);
+  size(200,200);
   background(0);
   stroke(255);
   for (int i = 0; i < (width - 2 * padding) * (height - 2 * padding) * populationPercentage; i++) {
-    agents.add(new Agent(PVector.random2D().mult(random(agentSpawnRadius)).add(width / 2, height / 2), random(TAU)));
+    if(random(1) > .5){
+      agents.add(new RedAgent(PVector.random2D().mult(random(agentSpawnRadius)).add(width / 2, height / 2), random(TAU)));
+    } else {
+      agents.add(new BlueAgent(PVector.random2D().mult(random(agentSpawnRadius)).add(width / 2, height / 2), random(TAU)));
+    }
   }
   
-  for (int i = 0; i < sourceCount; i++) {
-    sources.add(new Source(PVector.random2D().mult(random(sourceSpawnRadius)).add(width / 2, height / 2), sourceSize));
+  for (int i = 0; i < resourceCount; i++) {
+    resources.add(new Resource(PVector.random2D().mult(random(resourceSpawnRadius)).add(width / 2, height / 2), resourceSize));
   }
 }
 
@@ -89,14 +93,20 @@ void draw() {
   }
   updatePixels();
   
+  for (Resource resource : resources) {
+    resource.display();
+  }
+  
   for (Agent agent : agents) {
-    agent.update();
+    agent.sense();
+  }
+  for (Agent agent : agents) {
+    agent.move();
+  }
+  for (Agent agent : agents) {
     agent.display();
   }
 
-  for (Source source : sources) {
-    source.display();
-  }
   
   println(frameRate);
 }
