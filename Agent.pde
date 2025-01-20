@@ -3,6 +3,7 @@ float sensorAngle = PI / 4;
 float rotationAngle = PI / 4;
 float rotationRandomness = PI / 16;
 float sensorDistance = 9;
+float maxDensity = 241;
 
 class Agent {
   PVector pos;
@@ -37,21 +38,23 @@ class Agent {
     } else if (rightStrength > centerStrength && rightStrength > leftStrength) {
       dir.rotate(rotationAngle);
     }
+    
+    PVector posNext = pos.copy().add(dir.copy().mult(speed));
+    if(brightness(get((int)posNext.x, (int)posNext.y)) > maxDensity){
+      dir.rotate(random(TAU));
+    } else {
+    }
   }
   
   void move() {  
     PVector delta = dir.copy().rotate(random(-rotationRandomness / 2, rotationRandomness / 2)).mult(speed);
     
     //check walls
-    if (pos.x + delta.x > width - padding || pos.x + delta.x < padding) {
-      delta.x *= -1;
-      dir.x *= -1;
+    PVector posFromCenter = pos.copy().add(delta).sub(width / 2, height / 2);
+    if(posFromCenter.mag() > wallRadius){
+      PVector normal = posFromCenter.copy().normalize().mult(-1);
+      dir.sub(normal.copy().mult(2 * dir.copy().dot(normal.copy())));
     }
-    if (pos.y + delta.y > height - padding || pos.y + delta.y < padding) {
-      delta.y *= -1;
-      dir.y *= -1;
-    }
-    
     pos.add(delta);
   }
   
