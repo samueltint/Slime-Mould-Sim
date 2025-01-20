@@ -1,77 +1,93 @@
 ArrayList<Agent> agents = new ArrayList<Agent>();
-int agentCount = 2000;
-int spawnRadius = 50;
+float populationPercentage = 0.1;
+int agentSpawnRadius = 200;
 
 ArrayList<Source> sources = new ArrayList<Source>();
-int sourceCount = 6;
-int sourceSize = 10;
+int sourceCount = 0;
+int sourceSize = 15;
+int sourceSpawnRadius = 100;
 
-boolean displayText = false;
-int padding = 0;
-float decay = 0.9;
+int padding = 10;
+float decay = 0.95;
 
-// blur
-float v = 1.0 / 9.0;
-float[][] kernel = {{ v, v, v },
-                    { v, v, v },
-                    { v, v, v }};
+int blurSize = 1;
 
 void setup() {
-  size(200,200);
   //fullScreen();
+  size(210,210);
   background(0);
   stroke(255);
-  for (int i = 0; i < agentCount; i++) {
-    agents.add(new Agent(PVector.random2D().mult(random(spawnRadius)).add(width / 2, height / 2), random(TAU)));
+  for (int i = 0; i < (width - 2 * padding) * (height - 2 * padding) * populationPercentage; i++) {
+    agents.add(new Agent(PVector.random2D().mult(random(agentSpawnRadius)).add(width / 2, height / 2), random(TAU)));
   }
   
-  for (int i = 0; i < sourceSize; i++) {
-    sources.add(new Source(PVector.random2D().mult(random(spawnRadius)).add(width / 2, height / 2), sourceSize));
+  for (int i = 0; i < sourceCount; i++) {
+    sources.add(new Source(PVector.random2D().mult(random(sourceSpawnRadius)).add(width / 2, height / 2), sourceSize));
   }
 }
 
 
 void draw() {
   loadPixels();
-  PImage blurImg = createImage(width, height, RGB);
-  //Loop through every pixel in the image
-  for (int y = padding + 1; y < height - padding - 1; y++) {
-    for (int x = padding + 1; x < width - padding - 1; x++) {
-      float sumRed = 0;   // Kernel sums for this pixel
-      float sumGreen = 0;
-      float sumBlue = 0;
-      for (int ky = -1; ky <= 1; ky++) {
-        for (int kx = -1; kx <= 1; kx++) {
-          //Calculate the adjacent pixel for this kernel point
-          int pos = (y + ky) * width + (x + kx);
-          
-          //Process each channel separately, Red first.
-          float valRed = red(pixels[pos]);
-          //Multiply adjacent pixels based on the kernel values
-          sumRed += kernel[ky + 1][kx + 1] * valRed;
-          
-          //Green
-          float valGreen = green(pixels[pos]);
-          sumGreen += kernel[ky + 1][kx + 1] * valGreen;
-          
-          //Blue
-          float valBlue = blue(pixels[pos]);
-          sumBlue += kernel[ky + 1][kx + 1] * valBlue;
-        }
-      }
-      //For this pixel in the new image, set the output value
-      //based on the sum from the kernel
-      blurImg.pixels[y * blurImg.width + x] = color(sumRed * decay, sumGreen * decay, sumBlue * decay);
+
+  float[] tempRed = new float[width * height];
+  float[] tempGreen = new float[width * height];
+  float[] tempBlue = new float[width * height];
+  
+  float[] partialBlurRed = new float[width * height];
+  float[] partialBlurGreen = new float[width * height];
+  float[] partialBlurBlue = new float[width * height];
+  
+  // Copy pixel colors to temp arrays
+  for (int i = 0; i < pixels.length; i++) {
+    color c = pixels[i];
+    tempRed[i] = red(c);
+    tempGreen[i] = green(c);
+    tempBlue[i] = blue(c);
+  }
+  
+  // Apply horizontal blur
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      float sumRed = 0, sumGreen = 0, sumBlue = 0;
+      int count = 0;
       
+      for (int k = -blurSize; k <= blurSize; k++) {
+        int xk = constrain(x + k, 0, width - 1);
+        int index = y * width + xk;
+        sumRed += tempRed[index];
+        sumGreen += tempGreen[index];
+        sumBlue += tempBlue[index];
+        count++;
+      }
+      
+      int index = y * width + x;
+      partialBlurRed[index] = sumRed / count;
+      partialBlurGreen[index] = sumGreen / count;
+      partialBlurBlue[index] = sumBlue / count;
+    }
+  } 
+  
+  // Apply vertical blur
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      float sumRed = 0, sumGreen = 0, sumBlue = 0;
+      int count = 0;
+      
+      for (int k = -blurSize; k <= blurSize; k++) {
+        int yk = constrain(y + k, 0, height - 1);
+        int index = yk * width + x;
+        sumRed += partialBlurRed[index];
+        sumGreen += partialBlurGreen[index];
+        sumBlue += partialBlurBlue[index];
+        count++;
+      }
+      
+      int index = y * width + x;
+      pixels[index] = color(sumRed * decay / count, sumGreen * decay / count, sumBlue * decay / count);
     }
   }
-  // State that there are changes to blurImg.pixels[]
-  blurImg.updatePixels();
-  
-  image(blurImg, 0, 0); // Draw the new image
-  
-  // Displaythe image
-  image(blurImg, 0, 0);
+  updatePixels();
   
   for (Agent agent : agents) {
     agent.update();
@@ -82,9 +98,7 @@ void draw() {
     source.display();
   }
   
-  if(displayText){
-    text(frameRate, 10,10);
-  }
+  println(frameRate);
 }
     
     

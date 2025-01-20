@@ -2,7 +2,7 @@ float speed = 1;
 float sensorAngle = PI / 4;
 float rotationAngle = PI / 4;
 float rotationRandomness = PI / 16;
-float sensorDistance = 2;
+float sensorDistance = 9;
 
 class Agent {
   PVector pos;
