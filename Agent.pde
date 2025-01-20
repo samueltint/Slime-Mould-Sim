@@ -7,10 +7,12 @@ float sensorDistance = 9;
 class Agent {
   PVector pos;
   PVector dir;
+  color species;
   
-  Agent(PVector _pos, float _angle) {
+  Agent(PVector _pos, float _angle, color _species) {
     pos = _pos;
     dir = PVector.fromAngle(_angle);
+    species = _species;
   }
   
   void sense() {
@@ -27,10 +29,9 @@ class Agent {
   }
   
   void decide(color leftSense, color centerSense, color rightSense){
-    //by default an agent will turn towards brighter pixels 
-    float leftStrength = brightness(leftSense);
-    float centerStrength = brightness(centerSense);
-    float rightStrength = brightness(rightSense);
+    float leftStrength = colorToPVector(leftSense).dot(colorToPVector(species));
+    float centerStrength = colorToPVector(centerSense).dot(colorToPVector(species));
+    float rightStrength = colorToPVector(rightSense).dot(colorToPVector(species));
     if (leftStrength > centerStrength && leftStrength > rightStrength) {
       dir.rotate( -rotationAngle);
     } else if (rightStrength > centerStrength && rightStrength > leftStrength) {
@@ -56,50 +57,14 @@ class Agent {
   
   void display() {
     strokeWeight(1);
-    stroke(#ffffff);
+    stroke(species);
     point(pos.x, pos.y);
   }
 }
 
-class RedAgent extends Agent {    
-  RedAgent(PVector _pos, float _angle) {
-    super(_pos, _angle);
-  }
-  
-  @Override
-  void display() {
-    strokeWeight(1);
-    stroke(#ff0000);
-    point(pos.x, pos.y);
-  }
-}
-
-class BlueAgent extends Agent {    
-  BlueAgent(PVector _pos, float _angle) {
-    super(_pos, _angle);
-  }
-  
-  @Override
-  void decide(color leftSense, color centerSense, color rightSense){
-    float leftBlue = blue(leftSense);
-    float centerBlue = blue(centerSense);
-    float rightBlue = blue(rightSense);
-    
-    float leftRed = red(leftSense);
-    float centerRed = red(centerSense);
-    float rightRed = red(rightSense);
-    
-    if (leftBlue > centerBlue && leftBlue > rightBlue && leftRed < leftBlue) {
-      dir.rotate( -rotationAngle);
-    } else if (rightBlue > centerBlue && rightBlue > leftBlue && rightRed < rightBlue) {
-      dir.rotate(rotationAngle);
-    }
-  }
-  
-  @Override
-  void display() {
-    strokeWeight(1);
-    stroke(#0000ff);
-    point(pos.x, pos.y);
-  }
+PVector colorToPVector(color c) {
+  float r = red(c);
+  float g = green(c);
+  float b = blue(c);
+  return new PVector(r, g, b);
 }
