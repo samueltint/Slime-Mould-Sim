@@ -1,6 +1,7 @@
 # Slime Mould Simulation
 
 A simulation of a slime mould (Physarum polycephalum) based on [this paper](https://uwe-repository.worktribe.com/output/980579), with additional guidance from [Sage Jenson's](https://cargocollective.com/sagejenson/physarum) writeup.
+
 Two variations of the sim are also included.
 
 ### Resources
