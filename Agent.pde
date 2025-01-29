@@ -50,10 +50,11 @@ class Agent {
     PVector delta = dir.copy().rotate(random(-rotationRandomness / 2, rotationRandomness / 2)).mult(speed);
     
     //check walls
-    PVector posFromCenter = pos.copy().add(delta).sub(width / 2, height / 2);
+    PVector posFromCenter = pos.copy().add(delta).sub(lPadding + wallRadius, tPadding + wallRadius);
     if(posFromCenter.mag() > wallRadius){
       PVector normal = posFromCenter.copy().normalize().mult(-1);
       dir.sub(normal.copy().mult(2 * dir.copy().dot(normal.copy())));
+
     }
     pos.add(delta);
   }
